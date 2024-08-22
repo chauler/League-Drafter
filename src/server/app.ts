@@ -2,8 +2,10 @@ import "dotenv/config";
 import express, { Request, Response } from "express";
 import path from "path";
 import { GetAccountFromName, GetMatchData, GetMatches } from "./main.js";
+import { MatchDataType } from "./types.js";
+
 const app = express();
-const port = process.env.port || 3000;
+const port = process.env.PORT || 3000;
 app.use(express.static("public"));
 app.use(express.raw());
 
@@ -12,13 +14,13 @@ app.get("/", (req, res) => {
 });
 
 app.get("/user", async (req, res) => {
-    console.log("hit1");
-    const username = req.query.username?.toString();
-    if (!username) {
+    const username = req.query.gameName?.toString();
+    const tag = req.query.tagLine?.toString();
+    if (!username || !tag) {
         res.sendStatus(404);
         return;
     }
-    const existingMatches = [];
+    const existingMatches: MatchDataType[] = [];
     const accountData = await GetAccountFromName(username);
     if (!accountData) return;
     const matchList = await GetMatches(accountData.puuid, {
@@ -29,16 +31,11 @@ app.get("/user", async (req, res) => {
         res.sendStatus(404);
         return;
     }
-    console.log("hit");
     for (let i = 0; i < matchList.length; i++) {
         const data = await GetMatchData(matchList[i], accountData.puuid);
         if (typeof data === "number") {
             console.log("rate limited");
             break;
-            //console.log(data);
-            // await delay(data * 1000);
-            // i--;
-            // continue;
         } else if (!data) continue;
         existingMatches.push(data);
     }

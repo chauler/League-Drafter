@@ -1,3 +1,4 @@
+import "dotenv/config";
 import path from "path";
 import { fileURLToPath } from "url";
 import { MatchData, MatchDataType, QueueType } from "./types.js";
@@ -5,11 +6,12 @@ import * as fs from "fs";
 import { Writeable } from "./Writeable.js";
 import { GetAccountFromName, GetMatchData, GetMatches, ParseChampData } from "./main.js";
 import { z } from "zod";
+import { delay } from "../util/util.js";
 
 const inputFile = "input.json";
 const outputFile = "output.txt";
 
-const __filename = fileURLToPath(import.meta.url);
+//const __filename = fileURLToPath(import.meta.url);
 const rootdir = path.dirname(__filename).replace(`${path.sep}dist`, "");
 const inputJSON = MatchData.array().safeParse(
     (() => {
@@ -27,7 +29,7 @@ TestFromFile(inputFile, outputFile);
 //TestToFile(inputFile);
 
 export async function TestFromFile(readfile: string, writefile: string) {
-    const __filename = fileURLToPath(import.meta.url);
+    //const __filename = fileURLToPath(import.meta.url);
     const rootdir = path.dirname(__filename).replace(`${path.sep}dist`, "");
     const filepath = `${rootdir}${path.sep}${readfile}`;
     const data = fs.readFileSync(filepath).toString();
@@ -107,10 +109,4 @@ export async function TestToFile(file: string) {
         existingMatches.push(data);
     }
     await WriteToStream(`${JSON.stringify(existingMatches, null, 2)}\n`);
-}
-
-function delay(milliseconds: number) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, milliseconds);
-    });
 }

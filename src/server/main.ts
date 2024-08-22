@@ -17,6 +17,7 @@ import {
     QueueIDs,
 } from "./types.js";
 import { z } from "zod";
+import { FetchWithRetry } from "../util/util.js";
 
 export function ParseChampData(data: MatchDataType[]) {
     const userToOpponentRecords = new Map<string, Map<string, MatchupRecordType>>();
@@ -71,11 +72,14 @@ export function ParseChampData(data: MatchDataType[]) {
 }
 
 export async function GetAccountFromName(name: string): Promise<AccountDataType | undefined> {
-    const response = await fetch(`https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${name}`, {
-        headers: {
-            "X-Riot-Token": process.env.RIOT_API_KEY || "",
-        },
-    });
+    const response = await FetchWithRetry(
+        `https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${name}/NA1`,
+        {
+            headers: {
+                "X-Riot-Token": process.env.RIOT_API_KEY || "",
+            },
+        }
+    );
     const parseResult = AccountData.safeParse(await response.json());
     if (!parseResult.success) {
         console.log(`Error getting account info from name\n${parseResult.error.toString()}`);
@@ -90,7 +94,7 @@ export async function GetMatches(
 ): Promise<string[] | undefined> {
     const { limit, offset, queueID } = options;
     const startTime: number = 1623844800;
-    const response = await fetch(
+    const response = await FetchWithRetry(
         `https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?startTime=${startTime}${
             queueID ? "&queue=" + queueID : ""
         }&start=${offset}&count=${limit}`,
@@ -112,7 +116,7 @@ export async function GetMatches(
 }
 
 export async function GetMatchData(matchid: string, puuid: string): Promise<MatchDataType | number | undefined> {
-    const response = await fetch(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchid}`, {
+    const response = await FetchWithRetry(`https://americas.api.riotgames.com/lol/match/v5/matches/${matchid}`, {
         headers: {
             "X-Riot-Token": process.env.RIOT_API_KEY || "",
         },

@@ -8,8 +8,8 @@ export type QueueType = (typeof QueueIDs)[number];
 
 export const AccountData = z.object({
     puuid: z.string(),
-    name: z.string(),
-    id: z.string(),
+    gameName: z.string(),
+    tagLine: z.string(),
 });
 export type AccountDataType = z.infer<typeof AccountData>;
 
